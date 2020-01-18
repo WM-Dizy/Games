@@ -25,6 +25,10 @@
 		canvas.height = height * devicePixelRatio
 
 		let ctx = canvas.getContext("2d")	
+		ctx.scale(devicePixelRatio, devicePixelRatio)
+
+		let dots = []
+		createDots(25, width, height, 2, 30)
 
 		//canvas.addEventListener("pointermove", handlePointerMove)
 
@@ -47,16 +51,16 @@
 		function handleKeyDown(e) {
 			switch(e.code) {
 				case "ArrowRight":
-					step = { x:1, y:0 }
+					step = { x:1.5, y:0 }
 					break;
 				case "ArrowLeft":
-					step = { x:-1, y:0 }
+					step = { x:-1.5, y:0 }
 					break;
 				case "ArrowDown":
-					step = { x:0, y:1 }
+					step = { x:0, y:1.5 }
 					break;
 				case "ArrowUp":
-					step = { x:0, y:-1 }
+					step = { x:0, y:-1.5 }
 					break;
 			}
 		}
@@ -66,7 +70,7 @@
 		let currentPosition = { x:10, y:10 }
 		let lastMoveTime = performance.now()
 
-		const stepTime = 100 /*ms*/
+		const stepTime = 16 /*ms*/
 
 		function handleAnimationFrame() {
 			ctx.clearRect(0, 0, width, height)
@@ -82,21 +86,55 @@
 					Math.min(currentPosition.y + step.y, height - 10),
 					10
 				)
+				lastMoveTime = currentTime
 			}
 
-			ctx.beginPath()
-			ctx.arc(
-				/*x*/currentPosition.x,
-				/*y*/currentPosition.y,
-				/*radius*/10,
-				/*startAngle*/0,
-				/*endAngle*/2 * Math.PI
-			)
-			ctx.fillStyle = "black"
-			ctx.fill()
+			// draw the food
+			drawFood()
+
+			// draw the snake
+			drawSnake(currentPosition)			
 
 			requestAnimationFrame(handleAnimationFrame)
 		}
+
+		function drawFood() {
+			for (let i = 0; i < dots.length; i++) {
+				drawDot(dots[i].p, dots[i].r, dots[i].c)
+			}
+		}
+
+		function drawSnake(position) {
+			drawDot(position, /*radius*/10, /*color*/"black")
+		}
+
+		function drawDot(position, radius, color) {
+			ctx.beginPath()
+			ctx.arc(
+				position.x,
+				position.y,
+				radius,
+				/*startAngle*/0,
+				/*endAngle*/2 * Math.PI
+			)
+			ctx.fillStyle = color
+			ctx.fill()
+		}
+
+		function createDots(count, maxX, maxY, minRadius, maxRadius) {
+			while(count-- > 0) {
+				let p = { x:Math.random() * maxX, y:Math.random() * maxY}
+				let r = minRadius + Math.random() * (maxRadius - minRadius)
+
+				let red = Math.floor(Math.random() * 256)
+				let green = Math.floor(Math.random() * 256)
+				let blue = Math.floor(Math.random() * 256)
+
+				let c = `rgb(${red}, ${green}, ${blue})`
+				dots.push({p:p, r:r, c:c})
+			}
+		}
+
 	</script>
 </head>
 <body>
