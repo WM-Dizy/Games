@@ -14,6 +14,90 @@
 
 		}
 	</style>
+	<script type="module">
+		let canvas = document.querySelector("canvas")
+		let style = getComputedStyle(canvas)
+
+		let width = parseInt(style.width)
+		let height = parseInt(style.height)
+
+		canvas.width = width * devicePixelRatio
+		canvas.height = height * devicePixelRatio
+
+		let ctx = canvas.getContext("2d")	
+
+		//canvas.addEventListener("pointermove", handlePointerMove)
+
+		function handlePointerMove(e) {
+			ctx.beginPath()
+			ctx.arc(
+				/*x*/e.clientX,
+				/*y*/e.clientY,
+				/*radius*/10,
+				/*startAngle*/0,
+				/*endAngle*/2 * Math.PI
+			)
+			ctx.fillStyle = "black"
+			ctx.fill()
+		}
+
+		window.addEventListener("keydown", handleKeyDown)
+		
+		let step = { x:0, y:0 }
+		function handleKeyDown(e) {
+			switch(e.code) {
+				case "ArrowRight":
+					step = { x:1, y:0 }
+					break;
+				case "ArrowLeft":
+					step = { x:-1, y:0 }
+					break;
+				case "ArrowDown":
+					step = { x:0, y:1 }
+					break;
+				case "ArrowUp":
+					step = { x:0, y:-1 }
+					break;
+			}
+		}
+
+		requestAnimationFrame(handleAnimationFrame)
+
+		let currentPosition = { x:10, y:10 }
+		let lastMoveTime = performance.now()
+
+		const stepTime = 100 /*ms*/
+
+		function handleAnimationFrame() {
+			ctx.clearRect(0, 0, width, height)
+
+			let currentTime = performance.now()
+			let deltaTime = currentTime - lastMoveTime
+			if (deltaTime >= stepTime) {
+				currentPosition.x = Math.max(
+					Math.min(currentPosition.x + step.x, width - 10),
+					10
+				)
+				currentPosition.y = Math.max(
+					Math.min(currentPosition.y + step.y, height - 10),
+					10
+				)
+			}
+
+			ctx.beginPath()
+			ctx.arc(
+				/*x*/currentPosition.x,
+				/*y*/currentPosition.y,
+				/*radius*/10,
+				/*startAngle*/0,
+				/*endAngle*/2 * Math.PI
+			)
+			ctx.fillStyle = "black"
+			ctx.fill()
+
+			requestAnimationFrame(handleAnimationFrame)
+		}
+	</script>
 </head>
 <body>
 	<canvas></canvas>
