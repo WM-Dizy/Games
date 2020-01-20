@@ -27,7 +27,9 @@
 		let ctx = canvas.getContext("2d")	
 		ctx.scale(devicePixelRatio, devicePixelRatio)
 
-		let dots = []
+		let snakeSize = 10
+
+		let food = []
 		createDots(25, width, height, 2, 30)
 
 		//canvas.addEventListener("pointermove", handlePointerMove)
@@ -37,7 +39,7 @@
 			ctx.arc(
 				/*x*/e.clientX,
 				/*y*/e.clientY,
-				/*radius*/10,
+				/*radius*/snakeSize,
 				/*startAngle*/0,
 				/*endAngle*/2 * Math.PI
 			)
@@ -49,26 +51,29 @@
 		
 		let step = { x:0, y:0 }
 		function handleKeyDown(e) {
+			const stepSize = 3.5
 			switch(e.code) {
 				case "ArrowRight":
-					step = { x:1.5, y:0 }
+					step = { x:stepSize, y:0 }
 					break;
 				case "ArrowLeft":
-					step = { x:-1.5, y:0 }
+					step = { x:-stepSize, y:0 }
 					break;
 				case "ArrowDown":
-					step = { x:0, y:1.5 }
+					step = { x:0, y:stepSize }
 					break;
 				case "ArrowUp":
-					step = { x:0, y:-1.5 }
+					step = { x:0, y:-stepSize }
 					break;
 			}
 		}
 
 		requestAnimationFrame(handleAnimationFrame)
 
-		let currentPosition = { x:10, y:10 }
+		let currentPosition = { x:snakeSize, y:snakeSize }
 		let lastMoveTime = performance.now()
+		let lastSnakePositions = [currentPosition]
+		let currentSnakeLength = 1
 
 		const stepTime = 16 /*ms*/
 
@@ -79,33 +84,58 @@
 			let deltaTime = currentTime - lastMoveTime
 			if (deltaTime >= stepTime) {
 				currentPosition.x = Math.max(
-					Math.min(currentPosition.x + step.x, width - 10),
-					10
+					Math.min(currentPosition.x + step.x, width - snakeSize),
+					snakeSize
 				)
 				currentPosition.y = Math.max(
-					Math.min(currentPosition.y + step.y, height - 10),
-					10
+					Math.min(currentPosition.y + step.y, height - snakeSize),
+					snakeSize
 				)
 				lastMoveTime = currentTime
+				lastSnakePositions.push({x:currentPosition.x, y:currentPosition.y})
+
+				if (lastSnakePositions.length > currentSnakeLength) {
+					lastSnakePositions.shift()
+				}
+
+				// see if we hit any food
+				for (let i = 0; i < food.length; i++) {
+					if (doesIntersect(
+						food[i].p, 
+						food[i].r, 
+						currentPosition, 
+						snakeSize)
+					) {
+						let foodSize = food[i].r
+
+						// eat the food
+						food.splice(i, 1)
+
+						increaseSnakeLength(foodSize)
+					}
+				}
 			}
+
 
 			// draw the food
 			drawFood()
 
 			// draw the snake
-			drawSnake(currentPosition)			
+			drawSnake(lastSnakePositions)			
 
 			requestAnimationFrame(handleAnimationFrame)
 		}
 
 		function drawFood() {
-			for (let i = 0; i < dots.length; i++) {
-				drawDot(dots[i].p, dots[i].r, dots[i].c)
+			for (let i = 0; i < food.length; i++) {
+				drawDot(food[i].p, food[i].r, food[i].c)
 			}
 		}
 
-		function drawSnake(position) {
-			drawDot(position, /*radius*/10, /*color*/"black")
+		function drawSnake(snakePositions) {
+			for (let position of snakePositions) {
+				drawDot(position, /*radius*/snakeSize, /*color*/"black")
+			}
 		}
 
 		function drawDot(position, radius, color) {
@@ -131,14 +161,29 @@
 				let blue = Math.floor(Math.random() * 256)
 
 				let c = `rgb(${red}, ${green}, ${blue})`
-				dots.push({p:p, r:r, c:c})
+				food.push({p:p, r:r, c:c})
 			}
+		}
+
+		function doesIntersect(p1, r1, p2, r2) {
+			let deltaX = p2.x - p1.x
+			let deltaY = p2.y - p1.y
+			let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+			if (r1 + r2 > distance) {
+				return true
+			}
+
+			return false
+		}
+
+		function increaseSnakeLength(foodSize) {
+			currentSnakeLength += Math.floor(foodSize)
 		}
 
 	</script>
 </head>
 <body>
 	<canvas></canvas>
-
 </body>
 </html>
