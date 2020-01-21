@@ -15,6 +15,7 @@
 		}
 	</style>
 	<script type="module">
+		let gameState = "start" // other states are: alive, dead
 		let canvas = document.querySelector("canvas")
 		let style = getComputedStyle(canvas)
 
@@ -30,7 +31,7 @@
 		let snakeSize = 10
 
 		let food = []
-		createDots(25, width, height, 2, 30)
+		createFood(25, width, height, 2, 30)
 
 		//canvas.addEventListener("pointermove", handlePointerMove)
 
@@ -80,17 +81,27 @@
 		function handleAnimationFrame() {
 			ctx.clearRect(0, 0, width, height)
 
+			// switch (gameState) {
+			// 	case "start": {
+			// 		drawStartState()
+			// 		break
+			// 	}
+			// 	case "alive": { 
+			// 		drawAliveState()
+			// 		break
+			// 	}
+			// 	case "dead": {
+			// 		drawDeadState()
+			// 		break
+			// 	}
+			// }
+
 			let currentTime = performance.now()
 			let deltaTime = currentTime - lastMoveTime
 			if (deltaTime >= stepTime) {
-				currentPosition.x = Math.max(
-					Math.min(currentPosition.x + step.x, width - snakeSize),
-					snakeSize
-				)
-				currentPosition.y = Math.max(
-					Math.min(currentPosition.y + step.y, height - snakeSize),
-					snakeSize
-				)
+				currentPosition.x += step.x
+				currentPosition.y += step.y
+
 				lastMoveTime = currentTime
 				lastSnakePositions.push({x:currentPosition.x, y:currentPosition.y})
 
@@ -98,24 +109,31 @@
 					lastSnakePositions.shift()
 				}
 
-				// see if we hit any food
-				for (let i = 0; i < food.length; i++) {
-					if (doesIntersect(
-						food[i].p, 
-						food[i].r, 
-						currentPosition, 
-						snakeSize)
-					) {
-						let foodSize = food[i].r
-
-						// eat the food
-						food.splice(i, 1)
-
-						increaseSnakeLength(foodSize)
+				if (
+					doesSnakeHitWall(currentPosition) ||
+					doesSnakeHitSelf(currentPosition)
+				) {
+					gameState = "dead"
+				}
+				else {
+					// see if we hit any food
+					for (let i = 0; i < food.length; i++) {
+						if (doesIntersect(
+							food[i].p, 
+							food[i].r, 
+							currentPosition, 
+							snakeSize)
+						) {
+							let foodSize = food[i].r
+	
+							// eat the food
+							food.splice(i, 1)
+	
+							increaseSnakeLength(foodSize)
+						}
 					}
 				}
 			}
-
 
 			// draw the food
 			drawFood()
@@ -123,7 +141,132 @@
 			// draw the snake
 			drawSnake(lastSnakePositions)			
 
-			requestAnimationFrame(handleAnimationFrame)
+			if (gameState == "dead") {
+				drawGameOver()
+			}
+			else {
+				requestAnimationFrame(handleAnimationFrame)
+			}
+		}
+
+		function doesSnakeHitWall(p) {
+			if (p.x < snakeSize ||
+				p.y < snakeSize ||
+				p.x > width - snakeSize ||
+				p.y > height - snakeSize
+			) {
+				return true
+			}
+
+			return false
+		} 
+
+		function doesSnakeHitSelf(p) {
+			// let snakePath = computeSnakePath()
+			// let currentLine = snakePath.currentLine
+			// let pastLines = snakePath.pastLines
+
+			// for (let line of pastLines ) {
+			// 	switch(line.type) {
+			// 		case "y": {
+			// 			switch(currentLine.type) {
+			// 				case "y": {
+			// 					if (currentLine === line) {
+			// 						break
+			// 					}
+
+			// 					if (currentLine.constant - line.constant < snakeSize * 2) {
+
+			// 					}
+
+			// 					break
+			// 				}
+			// 				case "yneg": {
+			// 					break
+			// 				}
+			// 				case "x": {
+			// 					break
+			// 				}
+			// 				case "xneg": {
+			// 					break
+			// 				}
+			// 			}
+			// 			break
+			// 		}
+			// 		case "yneg": {
+			// 			switch(currentLine.type) {
+			// 				case "y": {
+			// 					break
+			// 				}
+			// 				case "yneg": {
+			// 					break
+			// 				}
+			// 				case "x": {
+			// 					break
+			// 				}
+			// 				case "xneg": {
+			// 					break
+			// 				}
+			// 			}
+			// 			break
+			// 		}
+			// 		case "x": {
+			// 			switch(currentLine.type) {
+			// 				case "y": {
+			// 					break
+			// 				}
+			// 				case "yneg": {
+			// 					break
+			// 				}
+			// 				case "x": {
+			// 					break
+			// 				}
+			// 				case "xneg": {
+			// 					break
+			// 				}
+			// 			}
+			// 			break
+			// 		}
+			// 		case "xneg": {
+			// 			switch(currentLine.type) {
+			// 				case "y": {
+			// 					break
+			// 				}
+			// 				case "yneg": {
+			// 					break
+			// 				}
+			// 				case "x": {
+			// 					break
+			// 				}
+			// 				case "xneg": {
+			// 					break
+			// 				}
+			// 			}
+			// 			break
+			// 	}
+ 		// 	}
+			 
+			// for (let i = 0; i < lastSnakePositions.length - 1; i++) {
+			// 	if (doesIntersect(p, snakeSize, lastSnakePositions[i], snakeSize)) {
+			// 		return true
+			// 	}
+			// }
+
+			// return false
+		}
+
+		function drawGameOver() {
+			ctx.font = "bold 128px sans-serif"
+			ctx.fillStyle = "red"
+			let textMeasure = ctx.measureText("GAME OVER")
+			let textHeight = 
+				textMeasure.actualBoundingBoxAscent + 
+				textMeasure.actualBoundingBoxDescent
+			ctx.fillText(
+				"GAME OVER", 
+				(width - textMeasure.width)/2, 
+				(height - textHeight)/2
+			)
 		}
 
 		function drawFood() {
@@ -151,7 +294,7 @@
 			ctx.fill()
 		}
 
-		function createDots(count, maxX, maxY, minRadius, maxRadius) {
+		function createFood(count, maxX, maxY, minRadius, maxRadius) {
 			while(count-- > 0) {
 				let p = { x:Math.random() * maxX, y:Math.random() * maxY}
 				let r = minRadius + Math.random() * (maxRadius - minRadius)
@@ -179,6 +322,10 @@
 
 		function increaseSnakeLength(foodSize) {
 			currentSnakeLength += Math.floor(foodSize)
+		}
+
+		function computeSnakePath() {
+
 		}
 
 	</script>
