@@ -51,8 +51,8 @@
 		window.addEventListener("keydown", handleKeyDown)
 		
 		let step = { x:0, y:0 }
+		const stepSize = 3.5
 		function handleKeyDown(e) {
-			const stepSize = 3.5
 			switch(e.code) {
 				case "ArrowRight":
 					step = { x:stepSize, y:0 }
@@ -162,97 +162,15 @@
 		} 
 
 		function doesSnakeHitSelf(p) {
-			// let snakePath = computeSnakePath()
-			// let currentLine = snakePath.currentLine
-			// let pastLines = snakePath.pastLines
+			let clearance = Math.ceil(snakeSize * 2 / stepSize * 2)
 
-			// for (let line of pastLines ) {
-			// 	switch(line.type) {
-			// 		case "y": {
-			// 			switch(currentLine.type) {
-			// 				case "y": {
-			// 					if (currentLine === line) {
-			// 						break
-			// 					}
+			for (let i = 0; i < lastSnakePositions.length - clearance - 1; i++) {
+				if (doesIntersect(p, snakeSize, lastSnakePositions[i], snakeSize)) {
+					return true
+				}
+			}
 
-			// 					if (currentLine.constant - line.constant < snakeSize * 2) {
-
-			// 					}
-
-			// 					break
-			// 				}
-			// 				case "yneg": {
-			// 					break
-			// 				}
-			// 				case "x": {
-			// 					break
-			// 				}
-			// 				case "xneg": {
-			// 					break
-			// 				}
-			// 			}
-			// 			break
-			// 		}
-			// 		case "yneg": {
-			// 			switch(currentLine.type) {
-			// 				case "y": {
-			// 					break
-			// 				}
-			// 				case "yneg": {
-			// 					break
-			// 				}
-			// 				case "x": {
-			// 					break
-			// 				}
-			// 				case "xneg": {
-			// 					break
-			// 				}
-			// 			}
-			// 			break
-			// 		}
-			// 		case "x": {
-			// 			switch(currentLine.type) {
-			// 				case "y": {
-			// 					break
-			// 				}
-			// 				case "yneg": {
-			// 					break
-			// 				}
-			// 				case "x": {
-			// 					break
-			// 				}
-			// 				case "xneg": {
-			// 					break
-			// 				}
-			// 			}
-			// 			break
-			// 		}
-			// 		case "xneg": {
-			// 			switch(currentLine.type) {
-			// 				case "y": {
-			// 					break
-			// 				}
-			// 				case "yneg": {
-			// 					break
-			// 				}
-			// 				case "x": {
-			// 					break
-			// 				}
-			// 				case "xneg": {
-			// 					break
-			// 				}
-			// 			}
-			// 			break
-			// 	}
- 		// 	}
-			 
-			// for (let i = 0; i < lastSnakePositions.length - 1; i++) {
-			// 	if (doesIntersect(p, snakeSize, lastSnakePositions[i], snakeSize)) {
-			// 		return true
-			// 	}
-			// }
-
-			// return false
+			return false
 		}
 
 		function drawGameOver() {
