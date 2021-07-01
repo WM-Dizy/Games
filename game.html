@@ -55,15 +55,19 @@
 		function handleKeyDown(e) {
 			switch(e.code) {
 				case "ArrowRight":
+				case "KeyD":
 					step = { x:stepSize, y:0 }
 					break;
 				case "ArrowLeft":
+				case "KeyA":
 					step = { x:-stepSize, y:0 }
 					break;
 				case "ArrowDown":
+				case "KeyS":
 					step = { x:0, y:stepSize }
 					break;
 				case "ArrowUp":
+				case "KeyW":
 					step = { x:0, y:-stepSize }
 					break;
 			}
