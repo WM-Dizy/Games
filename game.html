@@ -11,7 +11,7 @@
 			border: 10px solid black;
 			width: calc(100vw - 20px);
 			height: calc(100vh - 20px);
-
+			touch-action: none;
 		}
 	</style>
 	<script type="module">
@@ -33,19 +33,51 @@
 		let food = []
 		createFood(25, width, height, 2, 30)
 
-		//canvas.addEventListener("pointermove", handlePointerMove)
+		canvas.addEventListener("pointerup", handlePointerUp)
+		canvas.addEventListener("pointerdown", handlePointerDown)
+		canvas.addEventListener("pointercancel", handlePointerCancel)
 
-		function handlePointerMove(e) {
-			ctx.beginPath()
-			ctx.arc(
-				/*x*/e.clientX,
-				/*y*/e.clientY,
-				/*radius*/snakeSize,
-				/*startAngle*/0,
-				/*endAngle*/2 * Math.PI
-			)
-			ctx.fillStyle = "black"
-			ctx.fill()
+		let touchDownLocation = { x: 0, y: 0}
+		let touchDownId = -1
+
+		function handlePointerDown(e) {
+			// Only pay attention to one touch pointer at a time
+			if (touchDownId !== -1) {
+				return
+			}
+
+			if (e.pointerType === "touch") {
+				touchDownLocation = { x: e.clientX, y: e.clientY }
+				touchDownId = e.pointerId
+			}
+		}
+
+		function handlePointerCancel(e) {
+			if (e.pointerId === touchDownId) {
+				touchDownId = -1
+				touchDownLocation = { x: 0, y: 0}
+			}
+		}
+
+		function handlePointerUp(e) {
+			const pointerMoveThreshold = 10
+
+			if (e.pointerId === touchDownId) {
+				touchDownId = -1
+				let deltaX = touchDownLocation.x - e.clientX
+				let deltaY = touchDownLocation.y - e.clientY
+
+				if (Math.abs(deltaX) > Math.abs(deltaY)) {
+					if (Math.abs(deltaX) > pointerMoveThreshold) {
+						step = { x:-(deltaX / Math.abs(deltaX)) * stepSize, y:0 }
+					}
+				}
+				else {
+					if (Math.abs(deltaY) > pointerMoveThreshold) {
+						step = { x:0, y:-(deltaY / Math.abs(deltaY)) * stepSize }
+					}
+				}
+			}
 		}
 
 		window.addEventListener("keydown", handleKeyDown)
